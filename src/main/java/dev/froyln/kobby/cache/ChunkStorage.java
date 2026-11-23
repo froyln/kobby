@@ -141,21 +141,20 @@ final class ChunkStorage {
         }
     }
 
-    boolean scan(WorldClient world, int centerX, int centerZ, int distance, int generation, LongSet live) {
+    boolean scan(WorldClient world, int centerX, int centerZ, int distance, int outerDistance, int generation, LongSet live) {
         try {
             IO.execute(() -> {
-                for (int radius = 0; radius <= distance && ChunkCache.scanCurrent(world, generation); radius++) {
-                    for (int x = centerX - radius; x <= centerX + radius; x++) {
-                        for (int z = centerZ - radius; z <= centerZ + radius; z++) {
-                            if (Math.max(Math.abs(x - centerX), Math.abs(z - centerZ)) != radius
-                                    || live.contains(ChunkPos.asLong(x, z))
-                                    || ChunkCache.contains(world, x, z)) {
-                                continue;
+                for (int radius = 0; radius <= Math.max(distance, outerDistance); radius++) {
+                    if (!ChunkCache.scanCurrent(world, generation)) return;
+                    for (int dx = -radius; dx <= radius; dx++) {
+                        int x = centerX + dx;
+                        if (Math.abs(dx) == radius) {
+                            for (int dz = -radius; dz <= radius; dz++) {
+                                scanColumn(world, x, centerZ + dz, radius, distance, outerDistance, generation, live);
                             }
-                            Object token = ChunkCache.beginLoad(world, x, z);
-                            if (token != null) {
-                                loadNow(world, x, z, token);
-                            }
+                        } else {
+                            scanColumn(world, x, centerZ - radius, radius, distance, outerDistance, generation, live);
+                            scanColumn(world, x, centerZ + radius, radius, distance, outerDistance, generation, live);
                         }
                     }
                 }
@@ -166,34 +165,52 @@ final class ChunkStorage {
         }
     }
 
+    private void scanColumn(WorldClient world, int x, int z, int radius, int distance,
+                            int outerDistance, int generation, LongSet live) {
+        if (!ChunkCache.scanCurrent(world, generation)) return;
+        long key = ChunkPos.asLong(x, z);
+        if (live.contains(key)) return;
+        if (radius <= distance) {
+            Object token = ChunkCache.beginLoad(world, x, z);
+            if (token != null) loadNow(world, x, z, token);
+        }
+        if (radius > distance - 2 && radius <= outerDistance && ChunkCache.needsFar(world, key, generation)) {
+            Chunk chunk = readSnapshot(world, x, z);
+            ChunkCache.farLoaded(world, key, generation, chunk == null ? 0 : DistantTerrain.sampleFar(chunk));
+        }
+    }
+
     private String saveKey(int x, int z) {
         return directory.getAbsolutePath() + '|' + x + '|' + z;
     }
 
-    private void loadNow(WorldClient world, int x, int z, Object token) {
+    private Chunk readSnapshot(WorldClient world, int x, int z) {
+        Chunk chunk = null;
         try {
-            Chunk chunk = null;
-            try {
-                synchronized (REGION_IO_LOCK) {
-                    Chunk pending = PENDING_SAVES.latest(saveKey(x, z));
-                    chunk = pending == null ? (loader.isChunkGeneratedAt(x, z) ? loader.loadChunk(world, x, z) : null)
-                            : ChunkCache.copySnapshot(world, pending);
-                }
-            } catch (IOException | RuntimeException e) {
-                e.printStackTrace();
-            }
-            if (chunk == null && ChunkCache.isFallbackEnabled()) {
-                chunk = fallback.load(world, x, z, loader);
-            }
-            if (chunk != null) {
-                ChunkCache.loaded(world, x, z, chunk, token);
-            } else {
-                ChunkCache.loadFailed(world, x, z, token);
+            synchronized (REGION_IO_LOCK) {
+                Chunk pending = PENDING_SAVES.latest(saveKey(x, z));
+                chunk = pending == null ? (loader.isChunkGeneratedAt(x, z) ? loader.loadChunk(world, x, z) : null)
+                        : ChunkCache.copySnapshot(world, pending);
             }
         } catch (IOException | RuntimeException e) {
             e.printStackTrace();
+        }
+        if (chunk == null && ChunkCache.isFallbackEnabled()) {
+            try {
+                chunk = fallback.load(world, x, z, loader);
+            } catch (IOException | RuntimeException e) {
+                e.printStackTrace();
+            }
+        }
+        return chunk;
+    }
+
+    private void loadNow(WorldClient world, int x, int z, Object token) {
+        Chunk chunk = readSnapshot(world, x, z);
+        if (chunk != null) {
+            ChunkCache.loaded(world, x, z, chunk, token);
+        } else {
             ChunkCache.loadFailed(world, x, z, token);
         }
     }
-
 }

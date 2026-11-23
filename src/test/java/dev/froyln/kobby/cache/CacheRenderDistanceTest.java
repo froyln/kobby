@@ -17,6 +17,13 @@ public class CacheRenderDistanceTest {
         assertEquals("", config.cacheProfile);
         org.junit.Assert.assertFalse(config.fallbackEnabled);
     }
+    @Test public void onlyLodExtendsProjectionPastNativeDistance() {
+        assertEquals(128, CacheRenderDistance.projected(8, Integer.MAX_VALUE, true, true));
+        assertEquals(32, CacheRenderDistance.projected(8, 128, true, false));
+        assertEquals(8, CacheRenderDistance.projected(8, 128, false, true));
+        assertEquals(32, CacheRenderDistance.effective(8, 128, true));
+    }
+
     @Test public void boundsConfiguredDistance() {
         assertEquals(32, CacheRenderDistance.effective(2, Integer.MAX_VALUE, true));
         assertEquals(2, CacheRenderDistance.effective(2, Integer.MIN_VALUE, true));

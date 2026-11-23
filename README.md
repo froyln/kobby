@@ -37,7 +37,7 @@ Explore an area first, then move away. Set Kobby’s cached distance above Minec
 Requires **Minecraft 1.12.2**, **LiteLoader**, and **Java 8**.
 
 1. Set up a Minecraft 1.12.2 instance with LiteLoader.
-2. Build the Kobby package using the instructions below, or download [the previous Bobby-branded v0.1.0 release](https://github.com/froyln/kobby/releases/download/v0.1.0/bobby112-gplv3-1.12.2.litemod).
+2. Build the Kobby package using the instructions below, or download [Kobby 1.0.0](https://github.com/froyln/kobby/releases/download/v1.0.0/kobby-liteloader-1.12.2-1.0.0.litemod).
 3. Copy it into your instance’s `minecraft/mods/1.12.2/` folder.
 4. Launch Minecraft and explore to populate the cache.
 
@@ -47,7 +47,7 @@ Install Kobby on the client. No server-side installation is needed.
 
 ## Controls and configuration
 
-Open LiteLoader’s mod list from the chest tab on the main menu or pause menu (or **Ctrl+Shift+Tab** if the tab is hidden). Select **Kobby → Settings...** to change terrain caching, cached distance, the fallback world option, the singleplayer live distance, cached-terrain dimming, or the profile for your next connection. Click **Save & Close**, or press **Escape**, to save and apply your changes.
+Open LiteLoader’s mod list from the chest tab on the main menu or pause menu (or **Ctrl+Shift+Tab** if the tab is hidden). Select **Kobby → Settings...** to change terrain caching, cached distance, the fallback world option, the singleplayer live distance, cached-terrain dimming, distant terrain LOD, or the profile for your next connection. Click **Save & Close**, or press **Escape**, to save and apply your changes.
 
 Open **Options → Controls → Kobby** and assign a key to **Toggle Kobby terrain cache**. It starts unassigned to avoid key conflicts.
 
@@ -61,12 +61,15 @@ You can also edit `liteconfig/common/bobby112.json` in your instance’s Minecra
   "cacheRenderDistance": 16,
   "integratedServerDistance": 0,
   "tintCachedTerrain": false,
+  "distantTerrainLod": false,
   "fallbackEnabled": false,
   "cacheProfile": ""
 }
 ```
 
-`cacheRenderDistance` sets how far explored cached terrain can be displayed, independently of Minecraft’s render distance. It defaults to 16 chunks and is limited to 2–32. The visible terrain range uses the larger of the two settings; Minecraft’s setting controls live chunk requests and singleplayer loading by default. For example, use Minecraft distance 6 and cache distance 16 to display explored terrain beyond the live area. Explore that terrain first: Kobby does not generate unseen chunks.
+`cacheRenderDistance` sets how far explored cached terrain can be displayed, independently of Minecraft’s render distance. It defaults to 16 chunks and accepts 2–128. Distances above 32 require **Distant terrain LOD** and a dimension with skylight. Shift-click the distance buttons to adjust by 16 chunks. The visible terrain range uses the larger of the two settings; Minecraft’s setting controls live chunk requests and singleplayer loading by default. For example, use Minecraft distance 6 and cache distance 16 to display explored terrain beyond the live area. Explore that terrain first: Kobby does not generate unseen chunks.
+
+Enable **Distant terrain LOD** or set `distantTerrainLod` to `true` to simplify cached terrain from 12 chunks away in dimensions with skylight. The renderer uses flat material colors at one sample per 4×4 blocks through 32 chunks, then one sample per chunk out to the configured distance. Distant trees and buildings can lose detail, and terrain edges can show seams. Live chunks and nearby cached chunks keep their normal detail. The setting defaults to off.
 
 Changes are reloaded while Minecraft is running. Disabling Kobby restores Minecraft’s normal terrain distance.
 
@@ -106,7 +109,7 @@ cd kobby
 ./gradlew build
 ```
 
-Output: `build/libs/kobby-liteloader-1.12.2-0.1.0.litemod`.
+Output: `build/libs/kobby-liteloader-1.12.2-1.0.0.litemod`.
 
 The project uses the included Gradle wrapper, MCP stable_39 mappings, LiteLoader, and Python 3 to normalize the final archive. The `.litemod` revision is pinned in `gradle.properties` and should be increased for a new release. See [compatibility](docs/COMPATIBILITY.md) for inspected versions and runtime checks.
 

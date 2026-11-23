@@ -5,7 +5,7 @@ Kobby is a Minecraft 1.12.2 LiteLoader implementation inspired by Bobby. It does
 | Feature | Current behavior |
 | --- | --- |
 | Persistent terrain | Detached block, biome, height and light snapshots in a separate Anvil cache |
-| Extended terrain distance | Independent `cacheRenderDistance`, default 16, limited to 2–32 chunks; live terrain retains priority |
+| Extended terrain distance | Independent `cacheRenderDistance`, default 16, selectable 2–128 chunks. Distances above 32 use LOD in skylit dimensions. Live terrain retains priority |
 | Restart/session recovery | Recorded terrain reloads asynchronously; accepted writes drain on orderly shutdown |
 | Fallback world | Opt-in read-only Minecraft 1.12.2 `saves/bobby-fallback`, including dimension directories; live > recorded > fallback |
 | Configuration reload | JSON changes reload while running; enable/disable and fallback changes clear stale render state |
@@ -16,6 +16,7 @@ Kobby is a Minecraft 1.12.2 LiteLoader implementation inspired by Bobby. It does
 | Automatic multiworld detection | Not included; users select separate profiles and reconnect when switching proxy worlds or resets |
 | Block entities and entities | Excluded from snapshots/fallback decoding; no cached simulation or interactions |
 | Cached terrain tint | Optional `tintCachedTerrain` reduces rendered cached sky light according to gamma and raises block light up to five levels; default off, stored light unchanged |
+| Distant terrain LOD | Optional `distantTerrainLod` draws coarse material-colored surfaces from cached columns 12 or more chunks away in skylit dimensions. Within native range, mesh preparation is bounded to eight columns per tick. Past 32 chunks, the disk scan keeps one compact height/color sample per chunk and discards the decoded snapshot. Ready surfaces replace normal cached meshes in the shared render lookup. The opaque terrain pass batches visible surfaces. Block models, transparency, and per-block light are approximated or omitted. |
 | Unload delay | No configurable delay; terrain is captured when live chunks unload |
 | Integrated-server distance override | Opt-in `integratedServerDistance`: 0 follows Minecraft; 3–32 overrides singleplayer/LAN loading and tracking while Kobby is enabled |
 | World selection/merge/upgrade commands | Manual profile selection through settings/JSON; merge and upgrade commands are not included |

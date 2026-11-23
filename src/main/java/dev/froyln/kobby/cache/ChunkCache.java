@@ -39,6 +39,8 @@ public final class ChunkCache {
     private static int lastScanX = Integer.MIN_VALUE;
     private static int lastScanZ = Integer.MIN_VALUE;
     private static int lastScanDistance = Integer.MIN_VALUE;
+    private static int lastScanFarDistance;
+    private static int farDistance;
     private static int viewX;
     private static int viewZ;
     private static int viewDistance = -1;
@@ -65,6 +67,7 @@ public final class ChunkCache {
         if (enabled != value) {
             enabled = value;
             CHUNKS.clear();
+            clearFar();
             pendingLoads.clear();
             failedLoads.clear();
             scanGeneration++;
@@ -77,6 +80,7 @@ public final class ChunkCache {
         if (fallbackEnabled == value) return false;
         fallbackEnabled = value;
         CHUNKS.clear();
+        clearFar();
         pendingLoads.clear();
         failedLoads.clear();
         scanGeneration++;
@@ -127,6 +131,7 @@ public final class ChunkCache {
             if (world == null) PROFILE.disconnect();
             else if (currentWorld == null) PROFILE.connect();
             CHUNKS.clear();
+            clearFar();
             pendingLoads.clear();
             failedLoads.clear();
             scanGeneration++;
@@ -161,6 +166,7 @@ public final class ChunkCache {
         synchronized (ChunkCache.class) {
             pendingLoads.remove(pos);
             failedLoads.remove(pos);
+            if (withinFarView(pos)) DistantTerrain.putFar(pos, DistantTerrain.sampleFar(copy));
             if (withinView(pos)) {
                 CHUNKS.putAndMoveToFirst(pos, copy);
             }
@@ -297,16 +303,22 @@ public final class ChunkCache {
         }
     }
 
-    public static void scanAround(WorldClient world, int centerX, int centerZ, int distance) {
+    public static void scanAround(WorldClient world, int centerX, int centerZ, int distance, int outerDistance) {
         distance = Math.max(0, Math.min(MAX_CACHE_DISTANCE, distance));
+        outerDistance = Math.max(0, Math.min(CacheRenderDistance.MAX_DISTANCE, outerDistance));
         ChunkStorage currentStorage;
         int generation;
         synchronized (ChunkCache.class) {
-            if (!enabled || currentWorld != world || (centerX == lastScanX && centerZ == lastScanZ && distance == lastScanDistance)) {
+            if (!enabled || currentWorld != world || (centerX == lastScanX && centerZ == lastScanZ && distance == lastScanDistance
+                    && outerDistance == lastScanFarDistance)) {
                 return;
             }
             currentStorage = storage;
             generation = ++scanGeneration;
+            if (centerX != viewX || centerZ != viewZ || outerDistance != farDistance) {
+                DistantTerrain.pruneFar(centerX, centerZ, distance - 2, outerDistance);
+            }
+            farDistance = outerDistance;
         }
         LongSet live = new LongOpenHashSet();
         for (int x = centerX - distance; x <= centerX + distance; x++) {
@@ -319,12 +331,13 @@ public final class ChunkCache {
         for (long pos : updateWindow(centerX, centerZ, distance, live)) {
             invalidateColumn(world, chunkX(pos), chunkZ(pos));
         }
-        if (currentStorage == null || currentStorage.scan(world, centerX, centerZ, distance, generation, live)) {
+        if (currentStorage == null || currentStorage.scan(world, centerX, centerZ, distance, outerDistance, generation, live)) {
             synchronized (ChunkCache.class) {
                 if (currentWorld == world && scanGeneration == generation) {
                     lastScanX = centerX;
                     lastScanZ = centerZ;
                     lastScanDistance = distance;
+                    lastScanFarDistance = outerDistance;
                 }
             }
         }
@@ -351,10 +364,28 @@ public final class ChunkCache {
         return viewDistance >= 0 && withinDistance(pos, viewX, viewZ, viewDistance);
     }
 
+    private static void clearFar() {
+        farDistance = 0;
+        DistantTerrain.clearFar();
+    }
+
+    private static boolean withinFarView(long key) {
+        return DistantTerrain.inOuterBand(key, viewX, viewZ, viewDistance - 2, farDistance);
+    }
+
+    static synchronized boolean needsFar(WorldClient world, long key, int generation) {
+        return scanCurrent(world, generation) && withinFarView(key) && !DistantTerrain.hasFar(key);
+    }
+
+    static synchronized void farLoaded(WorldClient world, long key, int generation, long sample) {
+        if (needsFar(world, key, generation)) DistantTerrain.putFar(key, sample);
+    }
+
     public static synchronized void liveLoaded(World world, int x, int z) {
         if (currentWorld == world) {
             long pos = ChunkPos.asLong(x, z);
             CHUNKS.remove(pos);
+            DistantTerrain.removeFar(pos);
             pendingLoads.remove(pos);
             failedLoads.remove(pos);
         }
@@ -418,6 +449,10 @@ public final class ChunkCache {
 
     public static boolean withinDistance(long pos, int centerX, int centerZ, int distance) {
         return Math.max(Math.abs((long) chunkX(pos) - centerX), Math.abs((long) chunkZ(pos) - centerZ)) <= distance;
+    }
+
+    static synchronized Chunk resident(World world, long key) {
+        return enabled && currentWorld == world ? CHUNKS.get(key) : null;
     }
 
     public static synchronized long[] positions(World world) {

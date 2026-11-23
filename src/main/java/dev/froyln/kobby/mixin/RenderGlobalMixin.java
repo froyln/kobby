@@ -1,6 +1,7 @@
 package dev.froyln.kobby.mixin;
 
 import dev.froyln.kobby.cache.ChunkCache;
+import dev.froyln.kobby.cache.DistantTerrain;
 import dev.froyln.kobby.cache.CacheRenderDistance;
 import net.minecraft.client.settings.GameSettings;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -22,5 +23,6 @@ public abstract class RenderGlobalMixin {
     @Inject(method = "setWorldAndLoadRenderers", at = @At("RETURN"))
     private void kobby$resetCacheForWorld(WorldClient world, CallbackInfo ci) {
         ChunkCache.begin(world);
+        DistantTerrain.reset(world);
     }
 }

@@ -13,6 +13,10 @@ public final class CachedTerrainTint {
         return changed;
     }
 
+    static boolean isEnabled() {
+        return enabled;
+    }
+
     public static boolean applies(World world, int x, int z) {
         return enabled && ChunkCache.isEnabled() && ChunkCache.contains(world, x, z);
     }

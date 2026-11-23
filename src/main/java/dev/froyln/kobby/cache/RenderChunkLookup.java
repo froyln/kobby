@@ -42,7 +42,7 @@ public final class RenderChunkLookup {
             return live;
         }
         Chunk cached = ChunkCache.get(world, x, z);
-        return cached != null ? cached : provider.provideChunk(x, z);
+        return cached != null && !DistantTerrain.usesLod(world, cached) ? cached : provider.provideChunk(x, z);
     }
 
     public static LongSet connectedColumns(long[] cached, int centerX, int centerZ, int distance) {

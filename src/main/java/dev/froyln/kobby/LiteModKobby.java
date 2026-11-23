@@ -20,6 +20,7 @@ import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Keyboard;
 
 import dev.froyln.kobby.cache.ChunkCache;
+import dev.froyln.kobby.cache.DistantTerrain;
 import dev.froyln.kobby.cache.CacheProfile;
 import dev.froyln.kobby.cache.CacheRenderDistance;
 import dev.froyln.kobby.cache.IntegratedServerDistance;
@@ -49,6 +50,9 @@ public class LiteModKobby implements Tickable, Configurable {
 
     @Expose
     public boolean tintCachedTerrain = false;
+
+    @Expose
+    public boolean distantTerrainLod = false;
 
     private File configFile;
     private long configModified;
@@ -98,6 +102,7 @@ public class LiteModKobby implements Tickable, Configurable {
             }
             setCacheProfile(cacheProfile);
             CacheRenderDistance.configure(cacheRenderDistance);
+            DistantTerrain.configure(distantTerrainLod);
             IntegratedServerDistance.configure(integratedServerDistance);
             boolean tintChanged = CachedTerrainTint.configure(tintCachedTerrain);
             boolean fallbackChanged = ChunkCache.setFallbackEnabled(fallbackEnabled);
@@ -109,9 +114,15 @@ public class LiteModKobby implements Tickable, Configurable {
         }
         WorldClient world = client.world;
         Entity camera = RenderChunkLookup.camera(client);
-        if (enabled && world != null && camera != null) {
-            ChunkCache.scanAround(world, MathHelper.floor(camera.posX) >> 4,
-                    MathHelper.floor(camera.posZ) >> 4, CacheRenderDistance.get(client.gameSettings.renderDistanceChunks) + 2);
+        if (world != null && camera != null) {
+            int centerX = MathHelper.floor(camera.posX) >> 4;
+            int centerZ = MathHelper.floor(camera.posZ) >> 4;
+            int distance = CacheRenderDistance.get(client.gameSettings.renderDistanceChunks);
+            if (enabled) {
+                int projected = CacheRenderDistance.projected(client.gameSettings.renderDistanceChunks, world.provider.hasSkyLight());
+                ChunkCache.scanAround(world, centerX, centerZ, distance + 2, projected > distance ? projected : 0);
+            }
+            if (clock) DistantTerrain.update(world, centerX, centerZ, distance, distantTerrainLod);
         }
     }
 
@@ -133,6 +144,7 @@ public class LiteModKobby implements Tickable, Configurable {
                 fallbackEnabled = config.fallbackEnabled;
                 integratedServerDistance = config.integratedServerDistance;
                 tintCachedTerrain = config.tintCachedTerrain;
+                distantTerrainLod = config.distantTerrainLod;
                 setCacheProfile(profile);
             }
         } catch (Exception e) {

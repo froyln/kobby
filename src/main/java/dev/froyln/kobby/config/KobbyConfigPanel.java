@@ -5,9 +5,11 @@ import com.mumfrey.liteloader.modconfig.AbstractConfigPanel;
 import com.mumfrey.liteloader.modconfig.ConfigPanelHost;
 import dev.froyln.kobby.LiteModKobby;
 import dev.froyln.kobby.cache.CacheProfile;
+import dev.froyln.kobby.cache.CacheRenderDistance;
 import dev.froyln.kobby.cache.IntegratedServerDistance;
 import java.util.List;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import org.lwjgl.input.Keyboard;
 
@@ -16,6 +18,7 @@ public final class KobbyConfigPanel extends AbstractConfigPanel {
     private boolean enabled;
     private boolean fallback;
     private boolean tint;
+    private boolean lod;
     private int distance;
     private int serverDistance;
     private GuiButton serverValue;
@@ -38,7 +41,8 @@ public final class KobbyConfigPanel extends AbstractConfigPanel {
         enabled = mod.enabled;
         fallback = mod.fallbackEnabled;
         tint = mod.tintCachedTerrain;
-        distance = Math.max(2, Math.min(32, mod.cacheRenderDistance));
+        lod = mod.distantTerrainLod;
+        distance = Math.max(2, Math.min(CacheRenderDistance.MAX_DISTANCE, mod.cacheRenderDistance));
         profileDraft = mod.cacheProfile;
         serverDistance = IntegratedServerDistance.normalize(mod.integratedServerDistance);
         buildControls(host);
@@ -52,13 +56,13 @@ public final class KobbyConfigPanel extends AbstractConfigPanel {
         });
         addLabel(2, 10, 42, width, 12, 0xFFFFFF, "Cached terrain distance");
         decrease = addControl(new GuiButton(3, 10, 58, 30, 20, "-"), button -> {
-            distance--;
+            distance = Math.max(2, distance - (GuiScreen.isShiftKeyDown() ? 16 : 1));
             updateDistance();
         });
         value = addControl(new GuiButton(4, 44, 58, width - 68, 20, ""), null);
         value.enabled = false;
         increase = addControl(new GuiButton(5, width - 20, 58, 30, 20, "+"), button -> {
-            distance++;
+            distance = Math.min(CacheRenderDistance.MAX_DISTANCE, distance + (GuiScreen.isShiftKeyDown() ? 16 : 1));
             updateDistance();
         });
         updateDistance();
@@ -90,12 +94,17 @@ public final class KobbyConfigPanel extends AbstractConfigPanel {
             tint = !tint;
             button.displayString = "Tint cached terrain: " + state(tint);
         });
+        addControl(new GuiButton(15, 10, 262, width, 20, "Distant terrain LOD: " + state(lod)), button -> {
+            lod = !lod;
+            button.displayString = "Distant terrain LOD: " + state(lod);
+        });
         List<String> help = mc.fontRenderer.listFormattedStringToWidth(
                 "Blank profile keeps your existing cache. Names: letters, numbers, spaces, . _ -. "
                 + "Reconnect to apply a new profile. Auto live distance follows Minecraft options. "
                 + "Overriding changes singleplayer loading and simulation, including LAN guests. "
+                + "Shift-click adjusts cached distance by 16. Distances above 32 require distant terrain LOD in skylit dimensions. "
                 + "Fallback reads matching saves/bobby-fallback. Terrain is visual only; saved on close.", width);
-        addLabel(7, 10, 262, width, help.size() * 10, 0xBBBBBB, help.toArray(new String[0]));
+        addLabel(7, 10, 296, width, help.size() * 10, 0xBBBBBB, help.toArray(new String[0]));
     }
 
     private void updateServerDistance() {
@@ -106,7 +115,7 @@ public final class KobbyConfigPanel extends AbstractConfigPanel {
 
     private void updateDistance() {
         decrease.enabled = distance > 2;
-        increase.enabled = distance < 32;
+        increase.enabled = distance < CacheRenderDistance.MAX_DISTANCE;
         value.displayString = distance + " chunks";
     }
 
@@ -154,6 +163,7 @@ public final class KobbyConfigPanel extends AbstractConfigPanel {
             mod.cacheRenderDistance = distance;
             mod.fallbackEnabled = fallback;
             mod.tintCachedTerrain = tint;
+            mod.distantTerrainLod = lod;
             mod.integratedServerDistance = serverDistance;
             mod.setCacheProfile(profile.getText());
             LiteLoader.getInstance().writeConfig(mod);
