@@ -1,6 +1,6 @@
 # Features and limits
 
-This is a Minecraft 1.12.2 LiteLoader implementation inspired by Bobby. It does not import modern Bobby caches or claim full upstream feature parity. See [compatibility evidence](COMPATIBILITY.md) for the exact builds and scenarios checked.
+Kobby is a Minecraft 1.12.2 LiteLoader implementation inspired by Bobby. It does not import modern Bobby caches or claim full upstream feature parity. See [compatibility evidence](COMPATIBILITY.md) for the exact builds and scenarios checked.
 
 | Feature | Current behavior |
 | --- | --- |
@@ -17,7 +17,7 @@ This is a Minecraft 1.12.2 LiteLoader implementation inspired by Bobby. It does 
 | Block entities and entities | Excluded from snapshots/fallback decoding; no cached simulation or interactions |
 | Cached terrain tint | Optional `tintCachedTerrain` reduces rendered cached sky light according to gamma and raises block light up to five levels; default off, stored light unchanged |
 | Unload delay | No configurable delay; terrain is captured when live chunks unload |
-| Integrated-server distance override | Opt-in `integratedServerDistance`: 0 follows Minecraft; 3–32 overrides singleplayer/LAN loading and tracking while Bobby is enabled |
+| Integrated-server distance override | Opt-in `integratedServerDistance`: 0 follows Minecraft; 3–32 overrides singleplayer/LAN loading and tracking while Kobby is enabled |
 | World selection/merge/upgrade commands | Manual profile selection through settings/JSON; merge and upgrade commands are not included |
 | Modern world/cache import | Not supported; no conversion or mutation of source saves |
 

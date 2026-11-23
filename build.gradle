@@ -26,7 +26,7 @@ minecraft {
     mappings = project.mappings_version
     runDir = 'run'
     makeObfSourceJar = false
-    replaceIn 'LiteModBobby112.java'
+    replaceIn 'LiteModKobby.java'
     replace '@MOD_VERSION@', project.mod_version
 }
 

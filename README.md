@@ -1,6 +1,6 @@
 <div align="center">
 
-# Bobby 1.12.2
+# Kobby
 
 **Keep explored terrain in view beyond the server’s view distance.**
 
@@ -9,7 +9,7 @@
 ![Java 8](https://img.shields.io/badge/Java-8-E68A2E)
 [![GPLv3](https://img.shields.io/badge/License-GPLv3-blue)](LICENSE)
 
-**[Documentation](docs/README.md) · [Compatibility](docs/COMPATIBILITY.md) · [Report an issue](https://github.com/froyln/bobby-1.12.2/issues)**
+**[Documentation](docs/README.md) · [Compatibility](docs/COMPATIBILITY.md) · [Report an issue](https://github.com/froyln/kobby/issues)**
 
 </div>
 
@@ -17,9 +17,9 @@
 
 ## What does it do?
 
-Bobby 1.12.2 saves terrain your client receives and keeps it available for rendering after the server unloads it. Revisit an area or reconnect, and previously cached terrain can load from disk.
+Kobby saves terrain your client receives and keeps it available for rendering after the server unloads it. Revisit an area or reconnect, and previously cached terrain can load from disk.
 
-Explore an area first, then move away. Set Bobby’s cached distance above Minecraft’s live distance to keep that terrain visible, including in singleplayer. Bobby displays only terrain already recorded or present in an enabled fallback world.
+Explore an area first, then move away. Set Kobby’s cached distance above Minecraft’s live distance to keep that terrain visible, including in singleplayer. Kobby displays only terrain already recorded or present in an enabled fallback world.
 
 ## Features
 
@@ -37,19 +37,21 @@ Explore an area first, then move away. Set Bobby’s cached distance above Minec
 Requires **Minecraft 1.12.2**, **LiteLoader**, and **Java 8**.
 
 1. Set up a Minecraft 1.12.2 instance with LiteLoader.
-2. Download [`bobby112-gplv3-1.12.2.litemod` from the v0.1.0 release](https://github.com/froyln/bobby-1.12.2/releases/download/v0.1.0/bobby112-gplv3-1.12.2.litemod).
+2. Build the Kobby package using the instructions below, or download [the previous Bobby-branded v0.1.0 release](https://github.com/froyln/kobby/releases/download/v0.1.0/bobby112-gplv3-1.12.2.litemod).
 3. Copy it into your instance’s `minecraft/mods/1.12.2/` folder.
 4. Launch Minecraft and explore to populate the cache.
 
-Install Bobby on the client. No server-side installation is needed.
+When upgrading, replace the old mod file with Kobby and reassign your cache toggle in Controls. Kobby uses the existing config, terrain cache, and fallback world paths.
+
+Install Kobby on the client. No server-side installation is needed.
 
 ## Controls and configuration
 
-Open LiteLoader’s mod list from the chest tab on the main menu or pause menu (or **Ctrl+Shift+Tab** if the tab is hidden). Select **Bobby 1.12.2 → Settings...** to change terrain caching, cached distance, the fallback world option, the singleplayer live distance, cached-terrain dimming, or the profile for your next connection. Click **Save & Close**, or press **Escape**, to save and apply your changes.
+Open LiteLoader’s mod list from the chest tab on the main menu or pause menu (or **Ctrl+Shift+Tab** if the tab is hidden). Select **Kobby → Settings...** to change terrain caching, cached distance, the fallback world option, the singleplayer live distance, cached-terrain dimming, or the profile for your next connection. Click **Save & Close**, or press **Escape**, to save and apply your changes.
 
-Open **Options → Controls → Bobby 1.12.2** and assign a key to **Toggle Bobby terrain cache**. It starts unassigned to avoid key conflicts.
+Open **Options → Controls → Kobby** and assign a key to **Toggle Kobby terrain cache**. It starts unassigned to avoid key conflicts.
 
-Press your assigned key in game to enable or disable Bobby. An on-screen message confirms the change, and the setting is saved. Disabling removes cached terrain from view and stops new caching; existing disk files remain available when you re-enable it.
+Press your assigned key in game to enable or disable Kobby. An on-screen message confirms the change, and the setting is saved. Disabling removes cached terrain from view and stops new caching; existing disk files remain available when you re-enable it.
 
 You can also edit `liteconfig/common/bobby112.json` in your instance’s Minecraft folder:
 
@@ -64,27 +66,27 @@ You can also edit `liteconfig/common/bobby112.json` in your instance’s Minecra
 }
 ```
 
-`cacheRenderDistance` sets how far explored cached terrain can be displayed, independently of Minecraft’s render distance. It defaults to 16 chunks and is limited to 2–32. The visible terrain range uses the larger of the two settings; Minecraft’s setting controls live chunk requests and singleplayer loading by default. For example, use Minecraft distance 6 and cache distance 16 to display explored terrain beyond the live area. Explore that terrain first: Bobby does not generate unseen chunks.
+`cacheRenderDistance` sets how far explored cached terrain can be displayed, independently of Minecraft’s render distance. It defaults to 16 chunks and is limited to 2–32. The visible terrain range uses the larger of the two settings; Minecraft’s setting controls live chunk requests and singleplayer loading by default. For example, use Minecraft distance 6 and cache distance 16 to display explored terrain beyond the live area. Explore that terrain first: Kobby does not generate unseen chunks.
 
-Changes are reloaded while Minecraft is running. Disabling Bobby restores Minecraft’s normal terrain distance.
+Changes are reloaded while Minecraft is running. Disabling Kobby restores Minecraft’s normal terrain distance.
 
-For a separate singleplayer live range, set **Singleplayer live distance** in Bobby’s settings, or `integratedServerDistance` in JSON. `0` (**Auto**) follows Minecraft; positive values are limited to 3–32 chunks. For example, keep Minecraft distance 8 and cached distance 16, then set the singleplayer live distance to 3. This changes the integrated server’s loading and tracking range for the host and LAN guests. Spawn chunks and other vanilla loading rules still apply. It takes effect on the next unpaused server tick; disabling Bobby restores Minecraft’s live distance. Dedicated servers keep their own distance.
+For a separate singleplayer live range, set **Singleplayer live distance** in Kobby’s settings, or `integratedServerDistance` in JSON. `0` (**Auto**) follows Minecraft; positive values are limited to 3–32 chunks. For example, keep Minecraft distance 8 and cached distance 16, then set the singleplayer live distance to 3. This changes the integrated server’s loading and tracking range for the host and LAN guests. Spawn chunks and other vanilla loading rules still apply. It takes effect on the next unpaused server tick; disabling Kobby restores Minecraft’s live distance. Dedicated servers keep their own distance.
 
 Set **Tint cached terrain** or `tintCachedTerrain` to `true` to make cached terrain visibly distinct: rendered sky light drops by 3–10 levels depending on gamma, and rendered block light rises by up to 5. It defaults to off and does not change saved light data or live terrain.
 
 ## Cache profiles
 
-Use a different `cacheProfile` name for each world behind a proxy address, or after a server reset. Select it in Bobby’s settings **before joining**. If you edit it while playing, disconnect and reconnect to apply it; changing dimension keeps the current connection’s profile.
+Use a different `cacheProfile` name for each world behind a proxy address, or after a server reset. Select it in Kobby’s settings **before joining**. If you edit it while playing, disconnect and reconnect to apply it; changing dimension keeps the current connection’s profile.
 
 Blank uses your existing cache. Named profiles start with separate recorded terrain. Select a previous name, or blank, to reopen its cache. Names are case-sensitive, support letters, numbers, spaces, dots, underscores and hyphens, and are limited to 64 characters. Surrounding spaces are trimmed.
 
-Profile selection is manual; Bobby does not detect proxy world switches automatically.
+Profile selection is manual; Kobby does not detect proxy world switches automatically.
 
 ## Fallback world
 
 To fill areas missing from the recorded cache, copy a matching **Minecraft 1.12.2 Anvil world** into `saves/bobby-fallback` and set `fallbackEnabled` to `true`. Keep its `region/`, `DIM-1/region/` and `DIM1/region/` directories in their original layout.
 
-Live chunks take priority, followed by recorded cache, then fallback terrain. The fallback files are opened read-only: Bobby does not generate, repair, convert or save that world. Entities, block entities and scheduled ticks are excluded. Modern world formats and symlinked sources are not supported.
+Live chunks take priority, followed by recorded cache, then fallback terrain. The fallback files are opened read-only: Kobby does not generate, repair, convert or save that world. Entities, block entities and scheduled ticks are excluded. Modern world formats and symlinked sources are not supported.
 
 The fallback is shared by this Minecraft instance, including all cache profiles. Enable it only while playing the matching world/server, and disable it when switching to an unrelated world. Changes to the option reload terrain automatically; after replacing fallback files, toggle the option off and on to refresh them.
 
@@ -99,12 +101,12 @@ Cached chunks are visual snapshots. They may be outdated, and they do not keep f
 With **JDK 8** selected:
 
 ```bash
-git clone https://github.com/froyln/bobby-1.12.2.git
-cd bobby-1.12.2
+git clone https://github.com/froyln/kobby.git
+cd kobby
 ./gradlew build
 ```
 
-Output: `build/libs/bobby112-liteloader-1.12.2-0.1.0.litemod`.
+Output: `build/libs/kobby-liteloader-1.12.2-0.1.0.litemod`.
 
 The project uses the included Gradle wrapper, MCP stable_39 mappings, LiteLoader, and Python 3 to normalize the final archive. The `.litemod` revision is pinned in `gradle.properties` and should be increased for a new release. See [compatibility](docs/COMPATIBILITY.md) for inspected versions and runtime checks.
 

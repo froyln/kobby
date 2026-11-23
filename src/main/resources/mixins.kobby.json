@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.7.4",
+  "package": "dev.froyln.kobby.mixin",
+  "refmap": "mixins.kobby.refmap.json",
+  "compatibilityLevel": "JAVA_8",
+  "injectors": { "defaultRequire": 1 },
+  "mixins": [],
+  "client": [
+    "ChunkProviderClientMixin",
+    "ChunkProviderClientAccessor",
+    "MinecraftMixin",
+    "IntegratedServerMixin",
+    "RenderChunkMixin",
+    "ChunkRenderWorkerMixin",
+    "WorldMixin",
+    "liteoptimizer.ClonedChunkSectionMixin",
+    "liteoptimizer.ChunkRenderManagerMixin",
+    "liteoptimizer.SodiumWorldRendererAccessors",
+    "liteoptimizer.SodiumWorldRendererMixin",
+    "liteoptimizer.WorldSliceMixin",
+    "EntityRendererMixin",
+    "RenderGlobalMixin"
+  ]
+}

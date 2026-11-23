@@ -2,7 +2,7 @@
 
 ## Goal and status
 
-Create a client mod for Minecraft 1.12.2 and LiteLoader implementing Bobby-style functionality, compatible with LiteOptimizer. The current package has bounded in-memory snapshots, asynchronous Anvil-region persistence, and renderer hooks. It starts in MultiMC with LiteOptimizer's Sodium renderer enabled and renders cached terrain with Sodium enabled, disabled and absent. Packaged checks cover disk recovery, live-chunk priority, movement handoffs, and a local dedicated server whose view distance was smaller than the client distance; an explored chunk rendered from cache after reconnect. Independent cached terrain distance works in singleplayer and multiplayer rendering. Broad modpack compatibility and final release review remain outstanding. The working name is Bobby 1.12.2 and does not imply upstream affiliation.
+Create a client mod for Minecraft 1.12.2 and LiteLoader implementing Bobby-style functionality, compatible with LiteOptimizer. The current package has bounded in-memory snapshots, asynchronous Anvil-region persistence, and renderer hooks. It starts in MultiMC with LiteOptimizer's Sodium renderer enabled and renders cached terrain with Sodium enabled, disabled and absent. Packaged checks cover disk recovery, live-chunk priority, movement handoffs, and a local dedicated server whose view distance was smaller than the client distance; an explored chunk rendered from cache after reconnect. Independent cached terrain distance works in singleplayer and multiplayer rendering. Broad modpack compatibility and final release review remain outstanding. The mod is named Kobby.
 
 ## Reference behavior
 
